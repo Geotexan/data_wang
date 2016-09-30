@@ -2,6 +2,8 @@
 *.pyo
 *.pyc
 out.*
+*.xls
+.*~lock*
 samples/*
 bin/
 doc/

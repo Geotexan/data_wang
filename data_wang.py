@@ -91,8 +91,14 @@ def parse_source(filepath):
                         res['lote'] += " " + fila[0]
                         continue
                     else:   # EOState
-                        res['granza'] = parse_granza(res['lote'])
-                        res['lote'] = res['lote'].replace(res['granza'], "")
+                        try:
+                            res['granza'] = parse_granza(res['lote'])
+                        except IndexError:
+                            print("Error analizando granza en", filepath)
+                            res['granza'] = res['lote']
+                        else:
+                            res['lote'] = res['lote'].replace(res['granza'],
+                                                              "")
                 else:
                     if fila[0] == "Average":
                         res['título'] = fila[1]
