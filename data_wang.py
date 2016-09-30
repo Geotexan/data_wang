@@ -12,6 +12,7 @@ from collections import defaultdict
 import os
 import csv
 import datetime
+import argparse
 
 
 def check_fila3(fila):
@@ -158,7 +159,13 @@ def dump(dicdata, filepath="out.csv"):
 
 def main():
     """Rutina principal."""
-    data = parse_data()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sourcedir")
+    args = parser.parse_args()
+    if args.sourcedir:
+        data = parse_data(args.sourcedir)
+    else:
+        data = parse_data()
     dump(data)
 
 

@@ -2,8 +2,7 @@
 *.pyo
 *.pyc
 out.*
-samples/*.xls
-samples/*.txt
+samples/*
 bin/
 doc/
 include/
