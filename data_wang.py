@@ -60,11 +60,13 @@ def parse_granza(cad):
     return granza
 
 
+# pylint: disable=too-many-branches,too-many-statements
 def parse_source(filepath):
     """Lee el contenido del fichero y extrae los valores. Devuelve una tupla
     con el lote (como cadena) y los valores de ese lote como diccionario.
     """
     res = {'fecha': None,
+           'código': None,
            'lote': None,
            'granza': None,
            'nominal': None,
@@ -111,6 +113,25 @@ def parse_source(filepath):
         except UnicodeDecodeError:  # EOF malformed en algunos ficheros
             pass
     fecha = res['fecha']
+    res['lote'] = res['lote'].strip()
+    res['granza'] = res['granza'].strip()
+    if res['lote'].startswith("0"):    # Solo pueden ser 001..018
+        lote = res['lote']
+        res['código'] = " " + lote.split()[0]
+        res['lote'] = " ".join(lote.split()[1:])
+    else:
+        res['código'] = ''
+    if res['granza'].upper().startswith("LO"):
+        res['lote'], res['granza'] = res['granza'], res['lote']
+    if not res['lote'].upper().startswith("LO"):
+        res['granza'] = res['lote'] + " " + res['granza']
+        res['lote'] = ""
+    if len(res['lote'].split()) > 2:
+        if res['lote'].split()[1] == "REPSOL":  # Caso especial... :'(
+            res['granza'] = " ".join(res['lote'].split()[1:])
+        else:
+            res['lote'] = " ".join(res['lote'].split()[:2])
+            res['granza'] = " ".join(res['lote'].split()[2:]) + " " + res['granza']
     return fecha, res
 
 
@@ -125,6 +146,7 @@ def parse_data(directory="samples"):
     {'26/09/2016': [{'fecha': '26/09/2016',
                      'lote': 'LOTE 2378',
                      'granza': 'REPSOL 050',
+                     'código': '001',
                      'nominal': 6.7,
                      'título': 6.3,
                      'CV título': 6.75,
@@ -147,8 +169,9 @@ def parse_data(directory="samples"):
 def dump(dicdata, filepath="out.csv"):
     """Construye una hoja de cálculo con los valores ordenados por fecha."""
     with open(filepath, "w") as fout:
-        fieldnames = ('source', 'fecha', 'lote', 'granza', 'nominal', 'título',
-                      'CV título', 'elong', 'CV elong', 'ten', 'CV ten')
+        fieldnames = ('source', 'fecha', 'código', 'lote', 'granza', 'nominal',
+                      'título', 'CV título', 'elong', 'CV elong', 'ten',
+                      'CV ten')
         writer = csv.DictWriter(fout, fieldnames=fieldnames)
         # writer.writerow(['Fecha', 'Lote', 'Granza', 'Nominal (dtex)',
         #                  'Título (dtex)', 'CV% título',
